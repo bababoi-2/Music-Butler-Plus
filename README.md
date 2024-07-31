@@ -4,4 +4,5 @@ The script aims to make this look like it is natively supported by the site.
 
 ## Features
 - Adds the Deezer Icon under songs, allowing you to open them on the deezer website or the deezer app
+- Adds the Deezer Icon under artists names on their page, allowing you to open them on the deezer website or the deezer app
 - Toggle for above mentioned open in website/app in the settings
