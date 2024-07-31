@@ -1,23 +1,24 @@
 // ==UserScript==
 // @name         MusicButler Deezer
 // @namespace    http://tampermonkey.net/
-// @version      2024-06-01
-// @description  Adds Deezer functionality. At the moment only quick search for song.
+// @version      0.2
+// @description  Adds Deezer functionality. At the moment only quick search for song and artist.
 // @author       Bababoiiiii
 // @match        https://www.musicbutler.io/
 // @match        https://www.musicbutler.io/users/profile/
+// @match        https://www.musicbutler.io/artist-page/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=musicbutler.io
 // @grant        none
 // ==/UserScript==
 
 
-function main() {
+function add_song_links() {
     function process_elem(elem, in_app) {
         let artist = elem.querySelector("div > div.grow.mt-2 > div.flex.flex-col.w-full.justify-between.grow > div.justify-self-end.grow > div.flex.flex-row.text-xs.px-4.group-data-\\[xs-cols\\=\\'2\\'\\]\\:px-2.mt-2.items-end.text-skin-card-info > div > div > span > a > span").textContent;
         let song = elem.querySelector("div > div.grow.mt-2 > div.flex.flex-col.w-full.justify-between.grow > div.text-sm.font-bold.mt-4.group-data-\\[xs-cols\\=\\'2\\'\\]\\:mt-2.px-4.h-10.group-data-\\[xs-cols\\=\\'2\\'\\]\\:px-2.flex.justify-center.flex-col.my-2 > p").textContent;
-        let link = `${in_app ? "deezer" : "https"}://www.deezer.com/search/${song} - ${artist}`
+        let link = `${in_app ? "deezer" : "https"}://www.deezer.com/search/${song} - ${artist}/track`
 
-        let a = document.createElement("a");
+        let a = document.createElement("div");
         a.innerHTML = `<a class="block" href="${link}" target="_blank"> <div class="py-2 text-center text"> <i class="fab fa-fw fa-deezer" aria-label="Deezer Link for the release ${song}" style="color: rgb(162, 56, 255);"></i> </div> </a>`
         elem.querySelector("div > div.grow.mt-2 > div.flex.flex-col.w-full.justify-between.grow > div.justify-self-end.grow > div.flex.flex-row.justify-between.items-center.w-full.mt-2.px-\\[0\\.85rem\\].group-data-\\[xs-cols\\=\\'2\\'\\]\\:px-2").prepend(a);
     }
@@ -61,6 +62,17 @@ function main() {
     wait_and_process_new_elems(1);
 }
 
+function add_artist_link() {
+    let in_app = window.localStorage.getItem("open_deezer_in_app");
+    let artist = document.querySelector("#content > div > div > div.bg-skin-base-300.py-6.mt-14.-mx-4 > div > div > div.flex.flex-row.items-center.space-x-6 > div.font-bold.text-2xl.text-skin-base-300-content").textContent;
+    let link = `${in_app ? "deezer" : "https"}://www.deezer.com/search/${artist}/artist`
+
+    let a = document.createElement("div");
+    a.innerHTML = `<a class="block" href="deezer://www.deezer.com/search/${artist}/artist" target="_blank"> <i class="fab fa-fw fa-deezer" aria-label="Deezer Link for the artist ${artist}" style="color: rgb(162, 56, 255);"></i> </a>`;
+    document.querySelector("#content > div > div > div.bg-skin-base-300.py-6.mt-14.-mx-4 > div > div > div.flex.flex-row.items-center.space-x-6 > div.font-bold.text-2xl.text-skin-base-300-content").appendChild(a);
+}
+
+
 function settings() {
     let state = window.localStorage.getItem("open_deezer_in_app");
     state = state === "true";
@@ -76,18 +88,20 @@ function settings() {
         window.localStorage.setItem("open_deezer_in_app", state);
         e.innerHTML = state ? activeHTML : inactiveHTML;
     }
-
-    document.querySelector("#content > div > div > div:nth-child(16) > form > div").appendChild(e);
+    let parent = document.querySelector("#content > div > div");
+    parent.insertBefore(e, parent.querySelector("div > form[hx-post='/users/update-profile-preferences-integrations-convert-spotify_links']").parentNode);
 
 }
 
 
 (function() {
     if (location.href === "https://www.musicbutler.io/") {
-        main();
+        add_song_links();
     }
     else if (location.href === "https://www.musicbutler.io/users/profile/") {
-        window.addEventListener('DOMContentLoaded', settings);
+        // window.addEventListener('DOMContentLoaded', settings);
         settings();
+    } else if (location.pathname.startsWith("/artist-page/")) {
+        add_artist_link();
     }
 })();
