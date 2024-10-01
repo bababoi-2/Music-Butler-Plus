@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MusicButlerPlus
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.3.1
 // @description  Adds more functionality to MusicButler
 // @author       Bababoiiiii
 // @match        https://www.musicbutler.io/
@@ -23,7 +23,9 @@ class deezer {
             let type = elem.querySelector("div > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div");
             type = type.querySelector(`div:nth-child(${type.childElementCount})`).textContent.trim();
 
-            let link = `${in_app ? "deezer" : "https"}://www.deezer.com/search/${song} - ${artist}/${type === "Album" ? "album" : "track"}`;
+            let query = `{${type === "Single" ? "track" : "album"}:'${song.replace(/\(feat.*\)/i, "")}' artist:'${artist}'}`;
+
+            let link = `${in_app ? "deezer" : "https"}://www.deezer.com/search/${query}/${type === "Single" ? "track" : "album"}`;
 
             let a = document.createElement("div");
             a.innerHTML = `<a class="block" href="${link}" target="_blank"> <div class="py-2 text-center text"> <i class="fab fa-fw fa-deezer" aria-label="Deezer Link for the release ${song}" style="color: rgb(162, 56, 255);"></i> </div> </a>`
@@ -87,6 +89,7 @@ class artists {
         if (artists.length > 0) {
             GM_setValue("followed_artists", artists);
         }
+        console.log(`Saved ${artists.length} artists`)
     }
 
     static edit(data) {
